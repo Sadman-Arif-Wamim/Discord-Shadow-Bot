@@ -21,7 +21,7 @@ namespace Shadow_Bot.Modules
         public async Task Help()
         {
             string reply = "";
-            var help = new List<string> { "help - you already know this one", "hello", "bye", "inspire", "bored", "zip {country} {zipcode}", "weather {city}" };
+            var help = new List<string> { "help - you already know this one", "hello", "bye", "inspire", "bored", "trivia - it's broken atm :(", "zip {country} {zipcode}", "weather {city}", "joke"};
             foreach (var i in help)
             {
                 reply += ("s!" + i + "\n");
@@ -265,7 +265,7 @@ namespace Shadow_Bot.Modules
             public currentConditions currentConditions { get; set; }
             public List<nextdays> next_days { get; set; }
         }
-        public class currentConditions 
+        public class currentConditions
         {
             public string dayhour { get; set; }
             public temp temp { get; set; }
@@ -292,6 +292,71 @@ namespace Shadow_Bot.Modules
         {
             public float km { get; set; }
             public float mile { get; set; }
+        }
+        #endregion
+
+        #region Joke Command
+        [Command("joke")]
+        public async Task joke()
+        {
+            try
+            {
+                HttpClient client = new HttpClient();
+                string json = "https://v2.jokeapi.dev/joke/Any";
+                Task<HttpResponseMessage> httpRequest = client.GetAsync(json);
+                HttpResponseMessage httpResponse = httpRequest.Result;
+                HttpStatusCode statusCode = httpResponse.StatusCode;
+                HttpContent responseContent = httpResponse.Content;
+
+                Task<string> stringContentsTask = responseContent.ReadAsStringAsync();
+                string responseString = stringContentsTask.Result;
+
+                if (responseString != null)
+                {
+                    var data = JsonConvert.DeserializeObject<jokes>(responseString);
+                    if(data.type == "twopart")
+                    {
+                        await Context.Channel.SendMessageAsync(data.setup);
+                        await Context.Channel.SendMessageAsync(data.delivery);
+                    }
+                    else
+                    {
+                        await Context.Channel.SendMessageAsync(data.joke);
+                    }
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync(Context.Message.Author.Mention + ", sorry no jokes at the moment");
+                }
+
+            }
+            catch (Exception e)
+            {
+                await ReplyAsync(e.ToString());
+            }
+        }
+        public class jokes
+        {
+            public bool error { get; set; }
+            public string category { get; set; }
+            public string type { get; set; }
+            public string joke { get; set; }
+            public string setup { get; set; }
+            public string delivery { get; set; }
+            public flags flags { get; set; }
+            public int id { get; set; }
+            public bool safe { get; set; }
+            public string lang { get; set; }
+        }
+        public class flags
+        {
+            public bool nsfw { get; set; }
+            public bool religious { get; set; }
+            public bool political { get; set; }
+            public bool racist { get; set; }
+            public bool sexist { get; set; }
+            [JsonProperty("explicit")]
+            public bool explicit_content{ get; set; }
         }
     }
     #endregion
