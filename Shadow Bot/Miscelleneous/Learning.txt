@@ -1,0 +1,7 @@
+﻿All the learnings I made making this.
+
+1. To deserialize array [ { } ] like this, deserialize to a responseString.Substring(1, responseString.Length - 2)) and map the response in object class;
+
+2. To pass parameters in commands, send parameters and data type in method heads and pass the parameter when calling the command.
+
+3. To map JSON object with spaces use [JSONProperty(" ")] above the get set file.
